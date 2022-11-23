@@ -1,0 +1,18 @@
+* {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  position: absolute;
+
+  -webkit-user-select: none;
+  user-select: none;
+
+  cursor: pointer;
+}
+
+body {
+  overflow: hidden;
+}
+
+relative {
+  position: relative;
+}
