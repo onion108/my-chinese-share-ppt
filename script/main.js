@@ -141,7 +141,7 @@ class Slide0 extends Slide {
   layout() {
     // this.titleElement.style.width = `${window.innerWidth - 20}px`;
     this.titleElement.style.whiteSpace = 'nowrap';
-    this.titleElement.style.fontSize = `${window.innerHeight / 10}px`;
+    this.titleElement.style.fontSize = `${window.innerHeight / 10 * 0.92}px`;
     console.log(this.titleElement.offsetHeight, this.titleElement.offsetWidth);
     this.titleElement.style.left = `${window.innerWidth / 2 - this.titleElement.offsetWidth / 2}px`;
     this.titleElement.style.top = `${window.innerHeight / 2 - this.titleElement.offsetHeight / 2}px`;
@@ -487,6 +487,123 @@ class Slide3 extends Slide {
   }
 }
 
+class Slide4 extends Slide {
+  initStage() {
+    
+    this.titleElement = document.createElement("a");
+    this.titleElement.innerText = "La Prononciation 发音";
+    this.titleElement.style.whiteSpace = 'nowrap';
+    this.titleElement.style.fontWeight = 'bold';
+
+    this.thoughts = [
+      this.#createThoughts("Mã tác đích lô phi khoái, cung như tích lịch huyền kinh", "马作的卢飞快，弓如霹雳弦惊"),
+      this.#createThoughts("마작적로비쾌，궁여벽력현경", "马作的卢飞快，弓如霹雳弦惊")
+    ];
+
+    this.el.opacity = "0";
+    this.el.append(this.titleElement);
+    for (let thought of this.thoughts) {
+      this.el.append(thought.zh);
+      this.el.append(thought.fr);
+    }
+    return super.render();
+  }
+
+  /**
+   * Create a element of thoughts.
+   * @param {string} zhContent The Chinese thought.
+   * @param {string} frContent The French thought.
+   * @returns {{zh: HTMLAnchorElement, fr: HTMLAnchorElement}} The element created.
+   */
+  #createThoughts(zhContent, frContent) {
+    let zhEl = document.createElement('a');
+    let frEl = document.createElement('a');
+    zhEl.innerText = zhContent;
+    frEl.innerText = frContent;
+    zhEl.style.whiteSpace = 'nowrap';
+    frEl.style.whiteSpace = 'nowrap';
+    return { zh: zhEl, fr: frEl };
+  }
+
+  /**
+   * @param {HTMLElement} previousEl
+   * @param {{zh: HTMLAnchorElement, fr: HTMLAnchorElement}} thoughtObject 
+   * @param {number} stdFontsize
+   * @param {number} [padToPrev=14]
+   */
+  #layoutThoughts(previousEl, thoughtObject, stdFontsize, padToPrev = 14) {
+    thoughtObject.zh.style.left = '37px';
+    thoughtObject.zh.style.top = `${previousEl.offsetHeight + previousEl.offsetTop + padToPrev}px`;
+    thoughtObject.zh.style.fontSize = `${stdFontsize / 1.4}px`;
+
+    thoughtObject.fr.style.left = `${37}px`;
+    thoughtObject.fr.style.top = `${thoughtObject.zh.offsetHeight + thoughtObject.zh.offsetTop - 3}px`;
+    thoughtObject.fr.style.font = `${stdFontsize / 2.3}px`;
+  }
+
+  layout() {
+
+    let standardFontSizeInPx = window.innerHeight / 15;
+
+    // Layout for the title element.
+    this.titleElement.style.left = '37px';
+    this.titleElement.style.top = '37px';
+    this.titleElement.style.fontSize = `${standardFontSizeInPx}px`;
+
+    /**
+     * @type {{zh: HTMLAnchorElement, fr: HTMLAnchorElement} | null}
+     */
+    let lastThought = null;
+    for (let thought of this.thoughts) {
+      if (lastThought === null) {
+        this.#layoutThoughts(
+          this.titleElement,
+          thought,
+          standardFontSizeInPx,
+          30,
+        );
+      } else {
+        this.#layoutThoughts(
+          lastThought.fr,
+          thought,
+          standardFontSizeInPx,
+          14,
+        );
+      }
+      lastThought = thought;
+    }
+
+  }
+  playEnterAnim(animationEndCallback) {
+    let delta = 0.0;
+    let hnd = setInterval(
+      () => {
+        if (delta >= 3.2) {
+          clearInterval(hnd);
+          animationEndCallback();
+          this.layout();
+        }
+        this.el.style.transform = `translate(${delta-3.2}px,0)`
+        this.el.style.opacity = `${delta / 3.2}`;
+        delta += 0.2;
+      },
+      16,
+    );
+  }
+  playExitAnim(animationEndCallback) {
+    let delta = 0.0;
+    let hnd = setInterval(() => {
+      if (delta >= 3.0) {
+        animationEndCallback();
+        clearInterval(hnd);
+      }
+      this.el.style.transform = `translate(0px, ${delta}px)`
+      this.el.style.opacity = `${1.0-delta / 3.0}`;
+      delta += 0.2;
+    }, 16);
+  }
+}
+
 class SlideFinal extends Slide {
   initStage() {
     
@@ -509,7 +626,7 @@ class SlideFinal extends Slide {
         langName: "现代英语 English",
       },
       {
-        langContent: "ðancword ymbe wacen",
+        langContent: "Ðancword ymbe wacen",
         langName: "古英语 Englisċ",
       },
       {
@@ -792,6 +909,7 @@ window.onload = () => {
     new Slide1(),
     new Slide2(),
     new Slide3(),
+    new Slide4(),
     new SlideFinal(),
   );
   if (getQueryVariable("slide") === null) {
